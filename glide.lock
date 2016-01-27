@@ -1,0 +1,13 @@
+hash: 68cea5dfb7c13ee97e602a384466a069bf757922be160b86231efa6898db8458
+updated: 2016-01-27T11:05:08.979630791+01:00
+imports:
+- name: github.com/getsentry/raven-go
+  version: 1cc47a9463b90f246a0503d4c2e9a55c9459ced3
+  repo: https://github.com/getsentry/raven-go
+- name: github.com/Sirupsen/logrus
+  version: 844911ce078544c0d950b86ef09e6d19270ed33a
+  vcs: git
+- name: github.com/tobi/airbrake-go
+  version: a3cdd910a3ffef88a20fbecc10363a520ad61a0a
+  repo: https://github.com/tobi/airbrake-go
+devImports: []

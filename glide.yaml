@@ -1,0 +1,5 @@
+package: github.com/wercker/reporter
+import: 
+- package: github.com/Sirupsen/logrus
+  ref: 844911c
+  vcs: git

@@ -1,0 +1,27 @@
+box: tcnksm/gox:1.5.3
+build:
+  steps:
+    - setup-go-workspace:
+        package-dir: github.com/wercker/reporter
+
+    - script:
+        name: glide install
+        code: |
+          export GO15VENDOREXPERIMENT=1
+          export GLIDE_VERSION=0.8.3
+          curl -LO https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
+          tar -xvzf glide-${GLIDE_VERSION}-linux-amd64.tar.gz
+          ./linux-amd64/glide install --quick
+
+    - script:
+        name: go vet
+        code: |
+          go get golang.org/x/tools/cmd/vet
+          go tool vet $(find -name '*.go' -not -path './vendor*')
+
+    - golint:
+        exclude: vendor
+
+    - script:
+        name: go build
+        code: go build -v
