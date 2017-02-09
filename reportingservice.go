@@ -73,6 +73,7 @@ type RunStepFinishedArgs struct {
 	PackageURL          string `json:"packageUrl,omitempty"`
 	Message             string `json:"message,omitempty"`
 	WerckerYamlContents string `json:"werckerYamlContents,omitempty"`
+	Duration            int64  `json:"duration,omitempty"`
 }
 
 // RunStepLogsArgs the arguments asscociated with the RunStepLogs event.
