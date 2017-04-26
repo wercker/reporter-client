@@ -15,32 +15,44 @@
 package reporter
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
 	"sync"
 	"time"
+
+	"golang.org/x/net/context"
+)
+
+const (
+	// DefaultMaxChunkSize is the max bytes that the LogWriter will buffer until
+	// flushing.
+	DefaultMaxChunkSize = 10240
 )
 
 // NewLogWriter will create and initialize a new LogWriter. It is the callers
 // responsiblity to call Close to ensure resources are cleaned up and logs are
 // flushed.
-func NewLogWriter(baseURI, token string, args *PipelineStepReporterArgs) (*LogWriter, error) {
-	if args.BuildID == "" && args.DeployID == "" {
-		return nil, errors.New("Both BuildID and DeployID are not set")
+func NewLogWriter(svc ReportingService, runID, stepSafeID, stream string) (*LogWriter, error) {
+	if svc == nil {
+		return nil, errors.New("svc cannot be nil")
+	}
+
+	if runID == "" {
+		return nil, errors.New("RunID, BuildID and DeployID are not set")
 	}
 
 	cleanup := make(chan bool)
 
 	w := &LogWriter{
-		args:         args,
-		baseURI:      baseURI,
-		buffer:       new(bytes.Buffer),
+		svc:        svc,
+		runID:      runID,
+		stepSafeID: stepSafeID,
+		stream:     stream,
+
+		buffer:       []byte{},
 		currentChunk: 1,
 		cleanup:      cleanup,
-		token:        token,
+		maxChunkSize: DefaultMaxChunkSize,
 	}
 
 	go func(w *LogWriter) {
@@ -61,25 +73,42 @@ func NewLogWriter(baseURI, token string, args *PipelineStepReporterArgs) (*LogWr
 // buffers calls and flushes every three seconds. Close will stop this loop and
 // will flush out any bytes left in the buffer.
 type LogWriter struct {
-	args         *PipelineStepReporterArgs
-	baseURI      string
-	buffer       *bytes.Buffer
+	svc        ReportingService
+	runID      string
+	stepSafeID string
+	stream     string
+
+	buffer       []byte
 	currentChunk int
-	l            sync.Mutex
+	bufferLock   sync.Mutex
+	chunkLock    sync.Mutex
 	cleanup      chan bool
-	token        string
+	maxChunkSize int
+}
+
+// SetMaxChunkSize changes the MaxChunkSize for w. Panics if n <= 0.
+func (w *LogWriter) SetMaxChunkSize(n int) {
+	if n <= 0 {
+		panic(fmt.Sprintf("Invalid MaxChunkSize: %d", n))
+	}
+
+	w.maxChunkSize = n
 }
 
 // Write will buffer p and these will be send to the wercker api endpoint.
 func (w *LogWriter) Write(p []byte) (int, error) {
-	w.l.Lock()
-	defer w.l.Unlock()
-	n, err := w.buffer.Write(p)
-	if err != nil {
-		return -1, err
+	w.bufferLock.Lock()
+	defer w.bufferLock.Unlock()
+
+	w.buffer = append(w.buffer, p...)
+
+	for len(w.buffer) > w.maxChunkSize {
+		chunk := w.buffer[:w.maxChunkSize]
+		w.buffer = w.buffer[w.maxChunkSize:]
+		w.send(chunk)
 	}
 
-	return n, nil
+	return len(p), nil
 }
 
 // Close will stop sending the logs and it will flush out any logs still in the
@@ -91,49 +120,30 @@ func (w *LogWriter) Close() error {
 
 // Flush will take the buffer and send it to the wercker api.
 func (w *LogWriter) Flush() error {
+	w.bufferLock.Lock()
+	defer w.bufferLock.Unlock()
+
 	var err error
-	w.l.Lock()
-	defer w.l.Unlock()
-
-	if w.buffer.Len() > 0 {
-		buf := w.buffer
-		w.buffer = new(bytes.Buffer)
-
-		n := w.currentChunk
-		w.currentChunk = n + 1
-
-		u := ""
-		if w.args.BuildID != "" {
-			u = fmt.Sprintf("%s/internal/builds/%s/steps/%s/%d/log/%d", w.baseURI, w.args.BuildID, w.args.StepName, w.args.Order, n)
-		} else if w.args.DeployID != "" {
-			u = fmt.Sprintf("%s/internal/deploys/%s/steps/%s/%d/log/%d", w.baseURI, w.args.DeployID, w.args.StepName, w.args.Order, n)
-		}
-
-		uri, err := url.Parse(u)
-		if err != nil {
-			return err
-		}
-
-		q := uri.Query()
-		q.Set("wercker_token", w.token)
-		uri.RawQuery = q.Encode()
-
-		err = sendLogs(uri.String(), buf.Bytes())
+	if len(w.buffer) > 0 {
+		err = w.send(w.buffer)
+		w.buffer = []byte{}
 	}
 
 	return err
 }
 
-func sendLogs(url string, payload []byte) error {
-	resp, err := http.Post(url, "text/plain", bytes.NewReader(payload))
+func (w *LogWriter) send(b []byte) error {
+	n := w.currentChunk
+	w.currentChunk = n + 1
 
-	if err != nil {
-		return err
+	args := RunStepLogsArgs{
+		RunID:      w.runID,
+		StepSafeID: w.stepSafeID,
+		Logs:       b,
+		Stream:     w.stream,
+		Chunk:      n,
 	}
 
-	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-		return nil
-	}
-
-	return fmt.Errorf("API returned invalid statuscode: %d", resp.StatusCode)
+	err := w.svc.RunStepLogs(context.TODO(), args)
+	return err
 }
