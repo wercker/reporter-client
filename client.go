@@ -88,6 +88,21 @@ func (c *ReportingClient) RunStepLogs(ctx context.Context, args RunStepLogsArgs)
 	return c.postJSON("runsteplogs", args)
 }
 
+// JobStarted serializes args and sends them to a remote reporter service.
+func (c *ReportingClient) JobStarted(ctx context.Context, args JobStartedArgs) error {
+	return c.postJSON("jobstarted", args)
+}
+
+// JobError serializes args and sends them to a remote reporter service.
+func (c *ReportingClient) JobError(ctx context.Context, args JobErrorArgs) error {
+	return c.postJSON("joberror", args)
+}
+
+// JobFinished serializes args and sends them to a remote reporter service.
+func (c *ReportingClient) JobFinished(ctx context.Context, args JobFinishedArgs) error {
+	return c.postJSON("jobfinished", args)
+}
+
 func (c *ReportingClient) generateURL(path string) string {
 	return fmt.Sprintf("%s/%s", c.baseURI, path)
 }
