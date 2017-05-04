@@ -26,6 +26,10 @@ type ReportingService interface {
 	RunStepStarted(ctx context.Context, args RunStepStartedArgs) error
 	RunStepFinished(ctx context.Context, args RunStepFinishedArgs) error
 	RunStepLogs(ctx context.Context, args RunStepLogsArgs) error
+
+	JobStarted(ctx context.Context, args JobStartedArgs) error
+	JobFinished(ctx context.Context, args JobFinishedArgs) error
+	JobError(ctx context.Context, args JobErrorArgs) error
 }
 
 // RunStartedArgs the arguments asscociated with the RunStarted event.
@@ -83,4 +87,22 @@ type RunStepLogsArgs struct {
 	Logs   []byte `json:"logs"`
 	Stream string `json:"stream"`
 	Chunk  int    `json:"chunk"`
+}
+
+// JobStartedArgs are the arguments that are asscociated with the JobStarted
+// event.
+type JobStartedArgs struct {
+	RunID string `json:"runId"`
+}
+
+// JobFinishedArgs are the arguments that are asscociated with the JobFinished
+// event.
+type JobFinishedArgs struct {
+	RunID string `json:"runId"`
+}
+
+// JobErrorArgs are the arguments that are asscociated with the JobError event.
+type JobErrorArgs struct {
+	RunID string `json:"runId"`
+	Error string `json:"error"`
 }
