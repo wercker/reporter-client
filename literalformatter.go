@@ -14,9 +14,9 @@
 
 package reporter
 
-import log "github.com/Sirupsen/logrus"
+import log "github.com/sirupsen/logrus"
 
-// LiteralFormatter is a formatter for Sirupsen/logrusm which outputs
+// LiteralFormatter is a formatter for logrus which outputs
 // entry.Message as is.
 type LiteralFormatter struct {
 }

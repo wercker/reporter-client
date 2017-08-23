@@ -1,6 +1,6 @@
-package: github.com/wercker/reporter
-import: 
-- package: github.com/Sirupsen/logrus
-  ref: 844911c
-  vcs: git
-- package: golang.org/x/net/context
+package: github.com/wercker/reporter-client
+import:
+- package: github.com/sirupsen/logrus
+- package: golang.org/x/net
+  subpackages:
+  - context
