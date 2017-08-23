@@ -1,21 +1,19 @@
-hash: 907ab7b6af9e74964336ca25033cf12b1478aa17549f87420e10966dbce92bf6
-updated: 2016-02-09T12:54:45.009846757+01:00
+hash: 089a59ce8d6d65122d5b5a59140eb2bffe5158631a1e8447f51a742884b6313b
+updated: 2017-08-23T15:28:59.703066316+02:00
 imports:
-- name: github.com/getsentry/raven-go
-  version: 1cc47a9463b90f246a0503d4c2e9a55c9459ced3
-- name: github.com/Sirupsen/logrus
-  version: 844911ce078544c0d950b86ef09e6d19270ed33a
-  vcs: git
-- name: github.com/tobi/airbrake-go
-  version: a3cdd910a3ffef88a20fbecc10363a520ad61a0a
+- name: github.com/sirupsen/logrus
+  version: 89742aefa4b206dcf400792f3bd35b542998eb3b
 - name: golang.org/x/crypto
-  version: 1f22c0103821b9390939b6776727195525381532
-  repo: https://golang.org/x/crypto
+  version: eb71ad9bd329b5ac0fd0148dd99bd62e8be8e035
+  subpackages:
+  - ssh/terminal
 - name: golang.org/x/net
-  version: 7f88271ea9913b72aca44fa7fc8af919eacc17ce
+  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
   - context
-- name: golang.org/x/text
-  version: 2ea5e055772cf5daa0b1478d6e88c8d0c3d4cb79
-  repo: https://golang.org/x/text
-devImports: []
+- name: golang.org/x/sys
+  version: 07c182904dbd53199946ba614a412c61d3c548f5
+  subpackages:
+  - unix
+  - windows
+testImports: []
