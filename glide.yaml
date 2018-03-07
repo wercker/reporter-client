@@ -1,6 +1,0 @@
-package: github.com/wercker/reporter-client
-import:
-- package: github.com/sirupsen/logrus
-- package: golang.org/x/net
-  subpackages:
-  - context
