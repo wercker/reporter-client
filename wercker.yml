@@ -1,27 +1,30 @@
-box: tcnksm/gox:1.5.3
+# Copyright (c) 2018, Oracle and/or its affiliates. All rights reserved.
+
+box: golang:1.8
 build:
-  steps:
-    - setup-go-workspace:
-        package-dir: github.com/wercker/reporter
-
+  base-path: /go/src/github.com/wercker/reporter-client
+  steps:    
     - script:
-        name: glide install
+        name: install govendor
         code: |
-          export GO15VENDOREXPERIMENT=1
-          export GLIDE_VERSION=0.8.3
-          curl -LO https://github.com/Masterminds/glide/releases/download/${GLIDE_VERSION}/glide-${GLIDE_VERSION}-linux-amd64.tar.gz
-          tar -xvzf glide-${GLIDE_VERSION}-linux-amd64.tar.gz
-          ./linux-amd64/glide install --quick
-
-    - script:
-        name: go vet
-        code: |
-          go get golang.org/x/tools/cmd/vet
-          go tool vet $(find -name '*.go' -not -path './vendor*')
+          go get -u github.com/kardianos/govendor
+          go get -u golang.org/x/crypto/ssh/terminal
+          
+#    - script:
+#        name: go vet
+#        code: |
+#         govendor vet +local
 
     - golint:
         exclude: vendor
+        
+    - script:
+        name: install dependencies
+        code: |
+          govendor sync
 
     - script:
         name: go build
-        code: go build -v
+        code: |
+          go build ./...
+
