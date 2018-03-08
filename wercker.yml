@@ -10,10 +10,10 @@ build:
           go get -u github.com/kardianos/govendor
           go get -u golang.org/x/crypto/ssh/terminal
           
-#    - script:
-#        name: go vet
-#        code: |
-#         govendor vet +local
+    - script:
+        name: go vet
+        code: |
+          govendor vet +local
 
     - golint:
         exclude: vendor
