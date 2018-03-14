@@ -98,7 +98,8 @@ type JobStartedArgs struct {
 // JobFinishedArgs are the arguments that are asscociated with the JobFinished
 // event.
 type JobFinishedArgs struct {
-	RunID string `json:"runId"`
+	RunID          string `json:"runId"`
+	ProjectOwnerID string `json:"projectOwnerId,omitempty"`
 }
 
 // JobErrorArgs are the arguments that are asscociated with the JobError event.
