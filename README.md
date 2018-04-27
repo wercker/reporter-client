@@ -18,3 +18,7 @@ git clone git@github.com:wercker/reporter-client.git
 ```bash
 glide install
 ```
+
+## Contributing to this repository 
+
+Oracle welcomes contributions to this repository from anyone.  Please see [CONTRIBUTING](CONTRIBUTING.md) for more information. 
